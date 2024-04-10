@@ -7,16 +7,16 @@ OUTPUT_DIR = "outputs"
 
 contrast_ratio = 1000
 N = 10
-size = (N, N)
+size = (N, N, N)
 struct = np.random.randint(0, 2, size=size)
 
 struct = np.zeros(size, dtype=int)
 
-base_name = "het2d"
+base_name = "2phase"
 
 
 x = np.arange(0, N)
-X, Y = np.meshgrid(x, x)
+X, Y, Z = np.meshgrid(x, x, x, indexing="ij")
 
 print(X.shape, struct.shape)
 
@@ -32,13 +32,11 @@ struct[in_box] = 1
 
 np.save("structure.npy", struct)
 
-E0 = 1e8 * contrast_ratio
+E0 = 120
 P0 = 0.3
 
-E1 = 1e8
+E1 = 120 * contrast_ratio
 P1 = 0.3
-
-nx, ny = struct.shape
 
 # Only works in 2d. should be the only line needed to be changed for 3d
 subdomain_ids = (
@@ -55,15 +53,16 @@ constraint_types = "'strain none none none'"
 targets = "'strain11 zero zero zero'"
 
 
-with open("templates/homog2d.i", "r") as f:
+with open("templates/homog3d.i", "r") as f:
     template = "".join(f.readlines())
 
-template = template.replace(r"{{N_x}}", f"{nx}")
-template = template.replace(r"{{N_y}}", f"{ny}")
+template = template.replace(r"{{N_x}}", f"{N}")
+template = template.replace(r"{{N_y}}", f"{N}")
+template = template.replace(r"{{N_z}}", f"{N}")
 template = template.replace(r"{{E0}}", f"{E0}")
-template = template.replace(r"{{P0}}", f"{P0}")
-# template = template.replace(r"{{E1}}", f"{E1}")
-template = template.replace(r"{{P1}}", f"{P1}")
+# template = template.replace(r"{{P0}}", f"{P0}")
+template = template.replace(r"{{E1}}", f"{E1}")
+# template = template.replace(r"{{P1}}", f"{P1}")
 template = template.replace(r"{{subdomain_ids}}", f"{subdomain_ids}")
 template = template.replace(r"{{constraint_types}}", f"{constraint_types}")
 template = template.replace(r"{{targets}}", f"{targets}")

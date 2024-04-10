@@ -1,18 +1,20 @@
 # 2D with mixed conditions on stress/strain
 
 [GlobalParams]
-	displacements = 'disp_x disp_y'
+	displacements = 'disp_x disp_y disp_z'
 []
 
 [Mesh]
 	[generated]
 	  type = GeneratedMeshGenerator
-	  dim = 2
+	  dim = 3
 	  nx = {{N_x}}
-	  ny = {{N_x}}
+	  ny = {{N_y}}
+	  nz = {{N_z}}
 	  xmax = 1
 	  ymax = 1
-	  elem_type = QUAD4
+	  zmax = 1
+	  elem_type = HEX8
 	  show_info=true
 	[]
 	
@@ -25,15 +27,27 @@
 	[origin_set]
 		type=ExtraNodesetGenerator
 		new_boundary = "origin"
-		coord = "0 0"
+		coord = "0 0 0"
 		input=subdomain_id
 	[]
 
 	[xp_set]
 		type=ExtraNodesetGenerator
 		new_boundary = "x_plus"
-		coord = "1 0"
+		coord = "1 0 0"
 		input=origin_set
+	[]
+	[yp_set]
+		type=ExtraNodesetGenerator
+		new_boundary = "y_plus"
+		coord = "0 1 0"
+		input=xp_set
+	[]
+	[zp_set]
+		type=ExtraNodesetGenerator
+		new_boundary = "z_plus"
+		coord = "0 0 1"
+		input=yp_set
 	[]
 []
 
@@ -50,8 +64,8 @@
 		  new_system = true
 		  formulation = TOTAL
 		  volumetric_locking_correction = false
-		  constraint_types = 'strain strain strain none none none none none none'
-			targets = 'strain_001 zero zero'
+		  constraint_types = 'strain strain strain strain strain strain none none none'
+			targets = 'strain_001 zero zero zero zero zero'
 			generate_output = 'cauchy_stress_xx cauchy_stress_yy cauchy_stress_zz cauchy_stress_xy cauchy_stress_xz cauchy_stress_yz strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
 		[]
 	  []
@@ -75,13 +89,13 @@
 [Materials]
 [elastic_tensor_1]
 	type = ComputeIsotropicElasticityTensor
-	youngs_modulus = {{E0}}
+	youngs_modulus = 120
 	poissons_ratio = 0.3
 	block = '0'
 []
 [elastic_tensor_2]
 	type = ComputeIsotropicElasticityTensor
-	youngs_modulus = {{E1}}
+	youngs_modulus = 120000
 	poissons_ratio = 0.3
 	block = '1'
 []
