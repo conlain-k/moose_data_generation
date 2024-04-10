@@ -23,7 +23,7 @@ print(X.shape, struct.shape)
 in_box = (X >= 4) & (X <= 6) & (Y >= 0) & (Y <= N)
 
 # print(in_box)
-struct[in_box] = 1
+# struct[in_box] = 1
 
 
 # R = (X - 10) ** 2 + (Y - 20) ** 2

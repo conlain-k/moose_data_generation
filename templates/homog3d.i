@@ -64,8 +64,8 @@
 		  new_system = true
 		  formulation = TOTAL
 		  volumetric_locking_correction = false
-		  constraint_types = 'strain strain strain strain strain strain none none none'
-			targets = 'strain_001 zero zero zero zero zero'
+		  constraint_types = 'strain strain strain none strain strain none none strain'
+			targets = 'strain_001 zero zero zero zero zero zero zero zero'
 			generate_output = 'cauchy_stress_xx cauchy_stress_yy cauchy_stress_zz cauchy_stress_xy cauchy_stress_xz cauchy_stress_yz strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
 		[]
 	  []
@@ -84,7 +84,7 @@
 []
 
 # Periodic Boundary conditions
-!include templates/pbc_2d.i
+!include templates/pbc_3d.i
   
 [Materials]
 [elastic_tensor_1]
@@ -93,12 +93,12 @@
 	poissons_ratio = 0.3
 	block = '0'
 []
-[elastic_tensor_2]
-	type = ComputeIsotropicElasticityTensor
-	youngs_modulus = 120000
-	poissons_ratio = 0.3
-	block = '1'
-[]
+# [elastic_tensor_2]
+# 	type = ComputeIsotropicElasticityTensor
+# 	youngs_modulus = 120000
+# 	poissons_ratio = 0.3
+# 	block = '1'
+# []
 	[compute_stress]
 		type = ComputeLagrangianLinearElasticStress
 	[]

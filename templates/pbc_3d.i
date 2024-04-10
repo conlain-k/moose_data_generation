@@ -9,7 +9,7 @@
 		variable = disp_y
 		auto_direction = 'x y z'
 	  []
-	  [y]
+	  [z]
 		variable = disp_z
 		auto_direction = 'x y z'
 	  []
