@@ -6,7 +6,7 @@ INPUT_DIR = "inputs"
 OUTPUT_DIR = "outputs"
 
 contrast_ratio = 1000
-N = 10
+N = 31
 size = (N, N, N)
 struct = np.random.randint(0, 2, size=size)
 
@@ -53,7 +53,7 @@ constraint_types = "'strain none none none'"
 targets = "'strain11 zero zero zero'"
 
 
-with open("templates/homog3d.i", "r") as f:
+with open("templates/homog3d_nphase.i", "r") as f:
     template = "".join(f.readlines())
 
 template = template.replace(r"{{N_x}}", f"{N}")

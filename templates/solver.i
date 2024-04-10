@@ -12,7 +12,7 @@
     line_search = none
 
     petsc_options_iname = '-pc_type'
-    petsc_options_value = 'lu'
+    petsc_options_value = 'gmres'
 
     l_max_its = 2
     l_tol = 1e-14
