@@ -2,16 +2,16 @@
   [BCs]
 	[Periodic]
 	  [x]
-		variable = disp_x
-		auto_direction = 'x y z'
+			variable = disp_x
+			auto_direction = 'x y z'
 	  []
 	  [y]
-		variable = disp_y
-		auto_direction = 'x y z'
+			variable = disp_y
+			auto_direction = 'x y z'
 	  []
 	  [z]
-		variable = disp_z
-		auto_direction = 'x y z'
+			variable = disp_z
+			auto_direction = 'x y z'
 	  []
 	[]
 
