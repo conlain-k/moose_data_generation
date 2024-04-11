@@ -128,5 +128,6 @@
 		#file_base = "poly"
 	[]
 	exodus=true
+	print_linear_residuals = true
   []
   

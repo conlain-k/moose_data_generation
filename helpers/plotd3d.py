@@ -5,7 +5,7 @@ from h5py import File
 ds = 2
 
 
-def plot_cube(im, savedir, elev=34, azim=-30):
+def plot_cube(im, savedir=None, elev=34, azim=-30):
     Ix = im[0, :, :]
     Iy = im[:, 0, :]
     Iz = im[:, :, 0]
@@ -38,6 +38,10 @@ def plot_cube(im, savedir, elev=34, azim=-30):
     ax.dist = 6.2
     ax.view_init(elev=elev, azim=azim)
     ax.axis("off")
+
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
+    ax.set_ylabel("z")
 
     print(X.shape, Y.shape, np.rot90(Ix, k=1).shape, (X - X + yp).shape)
 
@@ -90,11 +94,8 @@ def plot_cube(im, savedir, elev=34, azim=-30):
     m = plt.cm.ScalarMappable(cmap=plt.cm.turbo, norm=norm)
     m.set_array([])
     fig.colorbar(m, ax=ax)
-    plt.savefig(savedir, transparent=True, dpi=300)
-
-    plt.show()
-
-    plt.close()
+    if savedir is not None:
+        plt.savefig(savedir, transparent=True, dpi=300)
 
 
 if __name__ == "__main__":

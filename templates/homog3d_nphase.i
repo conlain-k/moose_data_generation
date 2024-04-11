@@ -16,6 +16,7 @@
 		zmax = 1
 		elem_type = HEX8
 		show_info=true
+		output=true
 
 		subdomain_ids = {{subdomain_ids}}
 	[]
@@ -57,9 +58,10 @@
 				new_system = true
 				formulation = TOTAL
 				volumetric_locking_correction = false
-		    # xx xy xz yx yy yz zx zy zz
+		     	# xx xy xz yx yy yz zx zy zz for large strain
+				# TODO check large strain equivalent
 				constraint_types = 'strain strain strain none strain strain none none strain'
-				targets = 'bc_strain_xx bc_strain_xy bc_strain_xz zero bc_strain_yy bc_strain_yz zero zero bc_strain_zz'
+				targets = 'bc_strain_xx bc_strain_xy bc_strain_xz bc_strain_yy bc_strain_yz bc_strain_zz '
 				generate_output = 'cauchy_stress_xx cauchy_stress_yy cauchy_stress_zz cauchy_stress_xy cauchy_stress_xz cauchy_stress_yz strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
 			[]
 		[]
@@ -98,6 +100,9 @@
 	[]
 []
 
+# [ICs]
+# []
+
 # Periodic Boundary conditions
 !include templates/pbc_3d.i
 
@@ -109,6 +114,7 @@
 []
 []
 
+# !include templates/solver_debug.i
 !include templates/solver.i
 
 

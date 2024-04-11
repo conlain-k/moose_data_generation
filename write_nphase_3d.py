@@ -2,6 +2,17 @@ import numpy as np
 import json
 import os
 
+import argparse
+import h5py
+
+parser = argparse.ArgumentParser(
+    prog="write_nphase_3d",
+    description="Writes a 3D n-phase microstructure into a moose input file",
+)
+parser.add_argument(
+    "-m", "--micro_file", help="HDF5 Microstructure file to use as input", default=None
+)
+
 INPUT_DIR = "inputs"
 OUTPUT_DIR = "outputs"
 
@@ -10,13 +21,26 @@ CR = 1000
 E_VALS = np.array([120, 120 * CR])
 NU_VALS = np.array([0.3, 0.3])
 
-N = 30
+N = 10
 BASE_NAME = "2phase"
 
-BC_VALS = np.array([0.001, 0, 0, 0, 0, 0])
+BC_VALS = np.zeros(6)
+BC_VALS[0] = 0.001
 
 NPHASE_TEMPLATE = "templates/homog3d_nphase.i"
 PHASE_STIFF_TEMPLATE = "templates/phase_stiffness.i"
+
+
+def load_micro_file(mf):
+    f = h5py.File(mf, "r")
+
+    micro = f["micros"][0]
+
+    # convert 2phase to phase ids
+    # 0 if phase zero, 1 if phase 1
+    micro = micro[1]
+
+    return micro.astype(int)
 
 
 def gen_micro(N):
@@ -30,12 +54,13 @@ def gen_micro(N):
 
     print(X.shape, micro.shape)
 
-    in_box = (X >= 4) & (X <= 6) & (Y >= 2) & (Y <= 5)
+    in_box = (X >= 0) & (X <= N) & (Y >= 0) & (Y <= 4) & (Z >= 0) & (Z <= 6)
+
+    # R = X**2 + Y**2 + Z**2
 
     micro[in_box] = 1
-    np.save("structure.npy", micro)
 
-    return micro.astype(int)
+    return micro.astype(int), X
 
 
 def write_phase_stiffnesses(E_vals, nu_vals, ids, template):
@@ -91,12 +116,12 @@ def write_micro_info(micro, template):
         .replace(",", "")
         + "'"
     )
-    Nx, Ny, Nz = micro.shape
+    N_x, N_y, N_z = micro.shape
 
     # first write mesh info
-    template = template.replace(r"{{N_x}}", f"{N}")
-    template = template.replace(r"{{N_y}}", f"{N}")
-    template = template.replace(r"{{N_z}}", f"{N}")
+    template = template.replace(r"{{N_x}}", f"{N_x}")
+    template = template.replace(r"{{N_y}}", f"{N_y}")
+    template = template.replace(r"{{N_z}}", f"{N_z}")
 
     template = template.replace(r"{{subdomain_ids}}", f"{subdomain_ids}")
 
@@ -104,6 +129,9 @@ def write_micro_info(micro, template):
 
 
 def build_input_nphase(micro, E_vals, nu_vals, bc_vals, basename):
+
+    # convert C-to-Fortran ordering
+    micro = micro.transpose(-1, -2, -3)
 
     with open(NPHASE_TEMPLATE, "r") as f:
         template = "".join(f.readlines())
@@ -129,7 +157,17 @@ def build_input_nphase(micro, E_vals, nu_vals, bc_vals, basename):
 
 
 if __name__ == "__main__":
-    micro = gen_micro(N)
+
+    args = parser.parse_args()
+
+    if args.micro_file:
+        micro = load_micro_file(args.micro_file)
+
+        print(micro.shape)
+    else:
+        micro, X = gen_micro(N)
+
+    np.save("structure.npy", micro)
 
     template = build_input_nphase(micro, E_VALS, NU_VALS, BC_VALS, BASE_NAME)
 
