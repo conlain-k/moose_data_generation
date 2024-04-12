@@ -5,30 +5,45 @@ import os
 import argparse
 import h5py
 
+from helpers.common_templates import *
+
 parser = argparse.ArgumentParser(
     prog="write_nphase_3d",
     description="Writes a 3D n-phase microstructure into a moose input file",
 )
 parser.add_argument(
-    "-m", "--micro_file", help="HDF5 Microstructure file to use as input", default=None
+    "-m",
+    "--micro_file",
+    help="HDF5 Microstructure file to use as input (otherwise randomly generated)",
+    default=None,
 )
 
-INPUT_DIR = "inputs"
-OUTPUT_DIR = "outputs"
+parser.add_argument(
+    "--isotropic",
+    action="store_true",
+    default=True,
+    help="Whether material is isotropic or cubic (only when randomly generated)",
+)
 
 NUM_PHASES = 2
-CR = 1000
+CR = 100
+
 E_VALS = np.array([120, 120 * CR])
 NU_VALS = np.array([0.3, 0.3])
 
-N = 10
+C11 = 100
+C12 = 0
+C44 = 1
+
+N = 20
 BASE_NAME = "2phase"
 
 BC_VALS = np.zeros(6)
 BC_VALS[0] = 0.001
+# BC_VALS[1] = 0.001
+# BC_VALS[2] = 0.001
 
-NPHASE_TEMPLATE = "templates/homog3d_nphase.i"
-PHASE_STIFF_TEMPLATE = "templates/phase_stiffness.i"
+BASE_TEMPLATE = "templates/local3d.i"
 
 
 def load_micro_file(mf):
@@ -47,93 +62,40 @@ def gen_micro(N):
     size = (N, N, N)
     micro = np.random.randint(0, 2, size=size)
 
-    micro = np.zeros(size, dtype=int)
+    Nx = N
+    Ny = N
+    Nz = N
 
-    x = np.arange(0, N)
-    X, Y, Z = np.meshgrid(x, x, x, indexing="ij")
+    micro = np.zeros((Nx, Ny, Nz), dtype=int)
+
+    x = np.arange(0, Nx)
+    y = np.arange(0, Ny)
+    z = np.arange(0, Nz)
+    X, Y, Z = np.meshgrid(x, y, z, indexing="ij")
 
     print(X.shape, micro.shape)
 
-    in_box = (X >= 0) & (X <= N) & (Y >= 0) & (Y <= 4) & (Z >= 0) & (Z <= 6)
+    in_box = (X >= 0) & (X <= N - 2) & (Y >= 0) & (Y <= 4) & (Z >= 0) & (Z <= 6)
+
+    print(in_box.shape)
+    print(X.shape)
+    print(Y.shape)
 
     # R = X**2 + Y**2 + Z**2
 
     micro[in_box] = 1
 
+    micro = np.random.randint(0, 2, (N, N, N))
+
     return micro.astype(int), X
 
 
-def write_phase_stiffnesses(E_vals, nu_vals, ids, template):
-    with open(PHASE_STIFF_TEMPLATE, "r") as f:
-        p_temp_base = "".join(f.readlines())
-
-    phase_sections = []
-
-    for E, nu, id in zip(E_vals, nu_vals, ids):
-
-        # make a copy
-        p_t = p_temp_base
-
-        # replace relevant phases
-        p_t = p_t.replace(r"{{E}}", f"{E}")
-        p_t = p_t.replace(r"{{nu}}", f"{nu}")
-        p_t = p_t.replace(r"{{id}}", f"{id}")
-        phase_sections.append(p_t)
-
-    phases_sec_full = "\n".join(phase_sections)
-    template = template.replace(r"{{ELAST_TENSORS}}", f"{phases_sec_full}")
-
-    return template
-
-
-def write_BCs(bc_vals, template):
-    # xx xy xz yx yy yz zx zy zz
-
-    # set vals accordingly (assumes bc_vals is voigt order xx yy zz yz xz xy)
-    # TODO does moose use mandel or voigt (factor of two on shears)???
-    exx, eyy, ezz, eyz, exz, exy = bc_vals
-
-    template = template.replace(r"{{STRAIN_XX}}", f"{exx}")
-    template = template.replace(r"{{STRAIN_YY}}", f"{eyy}")
-    template = template.replace(r"{{STRAIN_ZZ}}", f"{ezz}")
-    template = template.replace(r"{{STRAIN_YZ}}", f"{eyz}")
-    template = template.replace(r"{{STRAIN_XZ}}", f"{exz}")
-    template = template.replace(r"{{STRAIN_XY}}", f"{exy}")
-
-    # write BC function vals
-    return template
-
-
-def write_micro_info(micro, template):
-    # NOTE might need to reorder
-    # serialize element phase ids to a string
-    subdomain_ids = (
-        "'"
-        + json.dumps(micro.tolist())
-        .replace("[", "")
-        .replace("],", "\n")
-        .replace("]", "")
-        .replace(",", "")
-        + "'"
-    )
-    N_x, N_y, N_z = micro.shape
-
-    # first write mesh info
-    template = template.replace(r"{{N_x}}", f"{N_x}")
-    template = template.replace(r"{{N_y}}", f"{N_y}")
-    template = template.replace(r"{{N_z}}", f"{N_z}")
-
-    template = template.replace(r"{{subdomain_ids}}", f"{subdomain_ids}")
-
-    return template
-
-
-def build_input_nphase(micro, E_vals, nu_vals, bc_vals, basename):
+def build_input_nphase(micro, phase_info, bc_vals, basename):
 
     # convert C-to-Fortran ordering
     micro = micro.transpose(-1, -2, -3)
 
-    with open(NPHASE_TEMPLATE, "r") as f:
+    with open(BASE_TEMPLATE, "r") as f:
         template = "".join(f.readlines())
 
     template = write_micro_info(micro, template)
@@ -141,12 +103,9 @@ def build_input_nphase(micro, E_vals, nu_vals, bc_vals, basename):
 
     # assumes micro is phase IDs, starting at zero!!
     active_phases = np.unique(micro)
-    print(micro)
-    print(active_phases, active_phases.dtype)
-    E_active, nu_active = E_vals[active_phases], nu_vals[active_phases]
 
     # use same ids as
-    template = write_phase_stiffnesses(E_active, nu_active, active_phases, template)
+    template = write_phase_stiffnesses(phase_info, active_phases, template)
 
     # now write other info
     template = template.replace(r"{{base_name}}", f"{basename}")
@@ -159,6 +118,7 @@ def build_input_nphase(micro, E_vals, nu_vals, bc_vals, basename):
 if __name__ == "__main__":
 
     args = parser.parse_args()
+    os.makedirs(INPUT_DIR, exist_ok=True)
 
     if args.micro_file:
         micro = load_micro_file(args.micro_file)
@@ -169,9 +129,14 @@ if __name__ == "__main__":
 
     np.save("structure.npy", micro)
 
-    template = build_input_nphase(micro, E_VALS, NU_VALS, BC_VALS, BASE_NAME)
+    if args.isotropic:
+        # TODO generalize to more than 2 phases ??
+        phase_info = np.array([E_VALS, NU_VALS]).T
+    else:
+        # TODO generalize to more than 2 phases ??
+        phase_info = np.array([[C11, C12, C44], [0.1 * C11, 0.1 * C12, 0.1 * C44]])
 
-    os.makedirs(INPUT_DIR, exist_ok=True)
+    template = build_input_nphase(micro, phase_info, BC_VALS, BASE_NAME)
 
     with open(f"{INPUT_DIR}/{BASE_NAME}.i", "w") as f:
         f.writelines(template)

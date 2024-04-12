@@ -10,8 +10,10 @@ def plot_cube(im, savedir=None, elev=34, azim=-30):
     Iy = im[:, 0, :]
     Iz = im[:, :, 0]
 
-    vmin = np.min([Ix, Iy, Iz])
-    vmax = np.max([Ix, Iy, Iz])
+    # vmin = np.min([Ix.ravel(), Iy.ravel(), Iz.ravel()])
+    vmin = np.min([Ix.ravel()])
+    # vmax = np.max([Ix.ravel(), Iy.ravel(), Iz.ravel()])
+    vmax = np.max([Ix.ravel()])
     norm = plt.Normalize(vmin=vmin, vmax=vmax)
 
     colors = plt.cm.turbo(norm(im))

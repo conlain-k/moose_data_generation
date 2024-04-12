@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from helpers.plotd3d import plot_cube
+from helpers.plot_cube import plot_cube
 
 from h5py import File
 
@@ -16,41 +16,52 @@ eps_file = np.genfromtxt(
     delimiter=",",
 )
 
+sig_file = np.genfromtxt(
+    "outputs/2phase_stress_out_0001.csv",
+    names=True,
+    delimiter=",",
+)
+
+sigxx = sig_file["stress_xx"][:]
+sigxx = sigxx.reshape(m.shape, order="F")
+
 
 exx = eps_file["strain_xx"][:] / E_BAR
-exx = exx.reshape(m.shape)
+exx = exx.reshape(m.shape, order="F")
+
+print(sigxx.shape, exx.shape, m.shape)
 
 # exx = exx.transpose(-3, -2, -1)
 
 ab_file = File("00000.h5")
 
 print(ab_file.keys())
-exx_ab = ab_file["strain"][0, 2]
+exx_ab = ab_file["strain"][0, 0] / E_BAR
 
 
-plot_cube(m)
+def rr(field):
+    field = np.roll(field, -25, 0)
+    field = np.roll(field, -33, 1)
+    field = np.roll(field, -17, 2)
 
-# plt.xlabel("x")
-# plt.ylabel("y")
-# plt.ylabel("z")
-plt.title("micro")
-plt.tight_layout()
-
-plot_cube(exx)
-
-# plt.xlabel("x")
-# plt.ylabel("y")
-# plt.ylabel("z")
-plt.title("strain_xx")
-plt.tight_layout()
+    return field
 
 
-# plt.figure()
-# plt.imshow(exx_ab[:, PLOT_SLICE], origin="lower")
-# plt.xlabel("x")
-# plt.ylabel("y")
-# plt.title("exx abaqus")
-# plt.colorbar()
-# plt.tight_layout()
+m = rr(m)
+exx = rr(exx)
+sigxx = rr(sigxx)
+exx_ab = rr(exx_ab)
+
+
+plot_cube(m, title="m", savedir="m.png", add_cb=False, cmap="viridis")
+
+plot_cube(exx, title="exx", savedir="exx.png")
+
+plot_cube(sigxx, title="sigxx", savedir="sigxx.png")
+
+plot_cube(exx_ab, title="exx_ab", savedir="exx_ab.png")
+
+plot_cube(exx_ab - exx, title="diff", savedir="diff.png")
+
 
 plt.show()

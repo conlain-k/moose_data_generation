@@ -11,23 +11,26 @@
 	  []
 	[]
   
+	# origin cannot move left
 	[fix1_x]
 	  type = DirichletBC
 	  boundary = "origin"
 	  variable = disp_x
 	  value = 0
 	[]
+
+
 	[fix1_y]
 	  type = DirichletBC
 	  boundary = "origin"
 	  variable = disp_y
-	  value = 0
+	  value = 1
 	[]
   
-	[fix2_y]
-	  type = DirichletBC
-	  boundary = "x_plus"
-	  variable = disp_y
-	  value = 0
-	[]
+	# [fix2_y]
+	#   type = DirichletBC
+	#   boundary = "x_plus"
+	#   variable = disp_y
+	#   value = 10
+	# []
   []

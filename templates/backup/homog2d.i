@@ -47,12 +47,12 @@
 		  strain = SMALL
 		#verbose=true
 		  add_variables = true
-		  new_system = true
-		  formulation = TOTAL
+		#   new_system = true
+		#   formulation = TOTAL
 		  volumetric_locking_correction = false
-		  constraint_types = 'strain strain strain none none none none none none'
-			targets = 'strain_001 zero zero'
-			generate_output = 'cauchy_stress_xx cauchy_stress_yy cauchy_stress_zz cauchy_stress_xy cauchy_stress_xz cauchy_stress_yz strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
+		#   constraint_types = 'strain strain strain none none none none none none'
+			# targets = 'strain_001 zero zero'
+			generate_output = 'stress_xx stress_yy stress_zz stress_xy stress_xz stress_yz strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
 		[]
 	  []
 	[]
@@ -85,12 +85,26 @@
 	poissons_ratio = 0.3
 	block = '1'
 []
-	[compute_stress]
-		type = ComputeLagrangianLinearElasticStress
-	[]
+[compute_stress]
+	type = ComputeLinearElasticStress
+[]
 []
   
-!include templates/solver.i
+!include templates/solver_debug.i
+#!include templates/solver.i
+
+[ICs]
+	[init_x]
+		type = ConstantIC
+		value = 0.5
+		variable = 'disp_x'
+	[]
+	[init_y]
+		type = ConstantIC
+		value = 0.5
+		variable = 'disp_y'
+	[]
+[]
 
 
 [VectorPostprocessors]

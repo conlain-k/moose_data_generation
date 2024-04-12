@@ -8,22 +8,21 @@ OUTPUT_DIR = "outputs"
 contrast_ratio = 1000
 N = 10
 size = (N, N)
+base_name = "het2d"
 struct = np.random.randint(0, 2, size=size)
 
-struct = np.zeros(size, dtype=int)
-
-base_name = "het2d"
+# struct = np.zeros(size, dtype=int)
 
 
-x = np.arange(0, N)
-X, Y = np.meshgrid(x, x)
+# x = np.arange(0, N)
+# X, Y = np.meshgrid(x, x)
 
-print(X.shape, struct.shape)
+# print(X.shape, struct.shape)
 
-in_box = (X >= 4) & (X <= 6) & (Y >= 0) & (Y <= N)
+# in_box = (X >= 4) & (X <= 6) & (Y >= 0) & (Y <= N)
 
-# print(in_box)
-struct[in_box] = 1
+# # print(in_box)
+# struct[in_box] = 1
 
 
 # R = (X - 10) ** 2 + (Y - 20) ** 2
@@ -32,10 +31,10 @@ struct[in_box] = 1
 
 np.save("structure.npy", struct)
 
-E0 = 1e8 * contrast_ratio
+E0 = 10 * contrast_ratio
 P0 = 0.3
 
-E1 = 1e8
+E1 = 10
 P1 = 0.3
 
 nx, ny = struct.shape
@@ -62,7 +61,7 @@ template = template.replace(r"{{N_x}}", f"{nx}")
 template = template.replace(r"{{N_y}}", f"{ny}")
 template = template.replace(r"{{E0}}", f"{E0}")
 template = template.replace(r"{{P0}}", f"{P0}")
-# template = template.replace(r"{{E1}}", f"{E1}")
+template = template.replace(r"{{E1}}", f"{E1}")
 template = template.replace(r"{{P1}}", f"{P1}")
 template = template.replace(r"{{subdomain_ids}}", f"{subdomain_ids}")
 template = template.replace(r"{{constraint_types}}", f"{constraint_types}")

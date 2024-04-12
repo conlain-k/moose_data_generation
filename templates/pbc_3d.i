@@ -1,18 +1,9 @@
-
   [BCs]
 	[Periodic]
-	  [x]
-			variable = disp_x
+		[xyz]
+			variable = 'disp_x disp_y disp_z'
 			auto_direction = 'x y z'
-	  []
-	  [y]
-			variable = disp_y
-			auto_direction = 'x y z'
-	  []
-	  [z]
-			variable = disp_z
-			auto_direction = 'x y z'
-	  []
+		[]
 	[]
 
 	[fix_origin_x]

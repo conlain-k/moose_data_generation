@@ -120,13 +120,20 @@
 
 
 [VectorPostprocessors]
-[strain_out]
-	type = ElementValueSampler
-	variable = 'strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
-	sort_by = 'id'
-	outputs = csv
-	execute_on = TIMESTEP_END
-[]
+	[strain_out]
+		type = ElementValueSampler
+		variable = 'strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
+		sort_by = 'id'
+		outputs = csv
+		execute_on = TIMESTEP_END
+	[]
+	[stress_out]
+		type = ElementValueSampler
+		variable = 'cauchy_stress_xx cauchy_stress_yy cauchy_stress_zz cauchy_stress_xy cauchy_stress_xz cauchy_stress_yz'
+		sort_by = 'id'
+		outputs = csv
+		execute_on = TIMESTEP_END
+	[]
 []
 
 [Outputs]
