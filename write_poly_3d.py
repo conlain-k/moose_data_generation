@@ -12,7 +12,11 @@ parser = argparse.ArgumentParser(
     description="Writes a 3D n-phase microstructure into a moose input file",
 )
 parser.add_argument(
-    "-m", "--euler_ang_file", help="File containing list of euler angles"
+    "-m", "--euler_ang_file", help="File containing list of euler angles", required=True
+)
+
+parser.add_argument(
+    "-N", help="Number of voxels in each direction (assumes square)", required=True
 )
 
 C11 = 160
@@ -30,7 +34,7 @@ BC_VALS[0] = 0.001
 BASE_TEMPLATE = "templates/local3d.i"
 
 
-def build_input_crystal(euler_ang_file, C11, C12, C44, bc_vals, basename):
+def build_input_crystal(N, euler_ang_file, C11, C12, C44, bc_vals, basename):
 
     with open(BASE_TEMPLATE, "r") as f:
         template = "".join(f.readlines())
@@ -38,7 +42,7 @@ def build_input_crystal(euler_ang_file, C11, C12, C44, bc_vals, basename):
     template = write_BCs(bc_vals, template)
 
     # use same ids as
-    template = write_crystal_info(C11, C12, C44, euler_ang_file, template)
+    template = write_crystal_info(N, C11, C12, C44, euler_ang_file, template)
 
     # now write other info
     template = template.replace(r"{{base_name}}", f"{basename}")
@@ -55,7 +59,7 @@ if __name__ == "__main__":
     os.makedirs(INPUT_DIR, exist_ok=True)
 
     template = build_input_crystal(
-        args.euler_ang_file, C11, C12, C44, BC_VALS, BASE_NAME
+        args.N, args.euler_ang_file, C11, C12, C44, BC_VALS, BASE_NAME
     )
 
     with open(f"{INPUT_DIR}/{BASE_NAME}.i", "w") as f:

@@ -28,18 +28,29 @@ def write_BCs(bc_vals, template):
     template = template.replace(r"{{STRAIN_XZ}}", f"{exz}")
     template = template.replace(r"{{STRAIN_XY}}", f"{exy}")
 
+    # estimate half the BC strains as initial cond (plus some small noise to get GMRES going)
+    template = template.replace(r"{{DISP_X_INIT}}", f"{exx / 2 + 1e-8}")
+    template = template.replace(r"{{DISP_Y_INIT}}", f"{eyy / 2 + 1e-8}")
+    template = template.replace(r"{{DISP_Z_INIT}}", f"{ezz / 2 + 1e-8}")
+
     # write BC function vals
     return template
 
 
-def write_crystal_info(C11, C12, C44, euler_ang_file, template):
+def write_crystal_info(N, C11, C12, C44, euler_ang_file, template):
+
+    # first write mesh info
+    # TODO take in D3D file and compute these directly
+    template = template.replace(r"{{N_x}}", f"{N}")
+    template = template.replace(r"{{N_y}}", f"{N}")
+    template = template.replace(r"{{N_z}}", f"{N}")
 
     with open(EULER_ANG_TEMPLATE, "r") as f:
         euler_template = "".join(f.readlines())
 
     # get relative path to file and make sure it's in right place
-    ang_file = os.basename(euler_ang_file)
-    shutil.copy2(euler_ang_file, f"INPUT_DIR/{ang_file}")
+    ang_file = os.path.basename(euler_ang_file)
+    shutil.copy2(euler_ang_file, f"{INPUT_DIR}/{ang_file}")
 
     # write that relative path into template
     euler_template = euler_template.replace(r"{{EULER_ANG_FILE}}", f"{ang_file}")
