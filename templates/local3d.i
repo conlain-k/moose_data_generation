@@ -22,9 +22,9 @@
 		xmax = 1
 		ymax = 1
 		zmax = 1
-		elem_type = HEX8
-		show_info=true
-		output=true
+		# elem_type = HEX8
+		# show_info=true
+		# output=true
 
 		# only used for n-phase structures
 		{{subdomain_info}}	
@@ -73,31 +73,31 @@
 []
 
 
-# TODO figure out what a good initial guess is
-[ICs]
-	[./xinit_0]
-			type = ConstantIC
-			value = "{{DISP_X_INIT}}"
-			variable = disp_x
-	[]
-	[./yinit]
-			type = ConstantIC
-			value = "{{DISP_Y_INIT}}"
-			variable = disp_y
-	[]
-	[./zinit]
-			type = ConstantIC
-			value = "{{DISP_Z_INIT}}"
-			variable = disp_z
-	[]
+# TODO figure out what a good initial guess is. Zero seems to do ok for now
+# [ICs]
+# 	[./xinit_0]
+# 			type = ConstantIC
+# 			value = "{{DISP_X_INIT}}"
+# 			variable = disp_x
+# 	[]
+# 	[./yinit]
+# 			type = ConstantIC
+# 			value = "{{DISP_Y_INIT}}"
+# 			variable = disp_y
+# 	[]
+# 	[./zinit]
+# 			type = ConstantIC
+# 			value = "{{DISP_Z_INIT}}"
+# 			variable = disp_z
+# 	[]
 
-	[./h_init]
-		type = ScalarComponentIC
-		values = "{{STRAIN_XX}} {{STRAIN_YY}} {{STRAIN_ZZ}} {{STRAIN_YZ}} {{STRAIN_XZ}} {{STRAIN_XY}}"
-		variable = hvar
-	[]
+# 	[./h_init]
+# 		type = ScalarComponentIC
+# 		values = "{{STRAIN_XX}} {{STRAIN_YY}} {{STRAIN_ZZ}} {{STRAIN_YZ}} {{STRAIN_XZ}} {{STRAIN_XY}}"
+# 		variable = hvar
+# 	[]
 
-[]
+# []
 
 # no need to change this, it just enforces PBCs
 [UserObjects]
@@ -200,8 +200,8 @@
 []
 
 # solver settings
-!include templates/solver.i
-# !include templates/solver_debug.i
+!include templates/solver/hypre_bgcstab.i
+# !include templates/solver/debug.i
 
 # outputs for CSV file
 [VectorPostprocessors]

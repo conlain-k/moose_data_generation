@@ -1,3 +1,5 @@
+# settings that worked well for buzzy
+
 [Preconditioning]
   [smp]
     type = SMP
