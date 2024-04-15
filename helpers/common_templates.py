@@ -29,9 +29,9 @@ def write_BCs(bc_vals, template):
     template = template.replace(r"{{STRAIN_XY}}", f"{exy}")
 
     # estimate half the BC strains as initial cond (plus some small noise to get GMRES going)
-    template = template.replace(r"{{DISP_X_INIT}}", f"{exx / 2 + 1e-8}")
-    template = template.replace(r"{{DISP_Y_INIT}}", f"{eyy / 2 + 1e-8}")
-    template = template.replace(r"{{DISP_Z_INIT}}", f"{ezz / 2 + 1e-8}")
+    template = template.replace(r"{{DISP_X_INIT}}", f"{exx }")
+    template = template.replace(r"{{DISP_Y_INIT}}", f"{eyy }")
+    template = template.replace(r"{{DISP_Z_INIT}}", f"{ezz }")
 
     # write BC function vals
     return template

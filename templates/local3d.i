@@ -76,25 +76,28 @@
 # TODO figure out what a good initial guess is
 [ICs]
 	[./xinit_0]
-		type = RandomIC
-		min = 0
-		max = "{{DISP_X_INIT}}"
-		variable = disp_x
+			type = ConstantIC
+			value = "{{DISP_X_INIT}}"
+			variable = disp_x
 	[]
 	[./yinit]
-		type = RandomIC
-		min = 0
-		max = "{{DISP_Y_INIT}}"
-		variable = disp_y
+			type = ConstantIC
+			value = "{{DISP_Y_INIT}}"
+			variable = disp_y
 	[]
 	[./zinit]
-		type = RandomIC
-		min = 0
-		max = "{{DISP_Z_INIT}}"
-		variable = disp_z
+			type = ConstantIC
+			value = "{{DISP_Z_INIT}}"
+			variable = disp_z
 	[]
-[]
 
+	[./h_init]
+		type = ScalarComponentIC
+		values = "{{STRAIN_XX}} {{STRAIN_YY}} {{STRAIN_ZZ}} {{STRAIN_YZ}} {{STRAIN_XZ}} {{STRAIN_XY}}"
+		variable = hvar
+	[]
+
+[]
 
 # no need to change this, it just enforces PBCs
 [UserObjects]
@@ -225,6 +228,7 @@
 	[]
 
 	print_perf_log = true
+	perf_graph = true
 	exodus = true
 	# show_var_residual_norms = true
 []
