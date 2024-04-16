@@ -34,7 +34,7 @@
     
 
     # small linear tolerance, allow NL tol to control convergence
-    l_tol = 1e-5
+    l_tol = 1e-4
     # Relative to initial guess = keep small
     nl_rel_tol = 1e-12
     # Absolute acceptable error in div sigma

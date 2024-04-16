@@ -5,7 +5,10 @@ import os
 import argparse
 import h5py
 
-from helpers.common_templates import *
+from helpers.common import *
+from helpers.nphase import *
+
+import re
 
 parser = argparse.ArgumentParser(
     prog="write_nphase_3d",
@@ -104,6 +107,9 @@ def build_input_nphase(micro, phase_info, bc_vals, basename):
     # assumes micro is phase IDs, starting at zero!!
     active_phases = np.unique(micro)
 
+    N_x, N_y, N_z = micro.shape[-3:]
+    template = write_mesh_info(N_x, N_y, N_z, template)
+
     # use same ids as
     template = write_phase_stiffnesses(phase_info, active_phases, template)
 
@@ -111,6 +117,12 @@ def build_input_nphase(micro, phase_info, bc_vals, basename):
     template = template.replace(r"{{base_name}}", f"{basename}")
     template = template.replace(r"{{INPUT_DIR}}", f"{INPUT_DIR}")
     template = template.replace(r"{{OUTPUT_DIR}}", f"{OUTPUT_DIR}")
+
+    template = template.replace(r"{{CRYSTAL_MODE}}", f"false")
+    template = template.replace(r"{{NPHASE}}", f"true")
+
+    # get rid of any unwritten template entries
+    template = remove_unused(template)
 
     return template
 

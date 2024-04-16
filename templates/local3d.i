@@ -1,4 +1,4 @@
-# 2D with mixed conditions on stress/strain
+# 3D Localization code
 
 [GlobalParams]
 	displacements = 'disp_x disp_y disp_z'
@@ -74,7 +74,7 @@
 
 
 # TODO figure out what a good initial guess is. Zero seems to do ok for now
-# [ICs]
+[ICs]
 # 	[./xinit_0]
 # 			type = ConstantIC
 # 			value = "{{DISP_X_INIT}}"
@@ -91,13 +91,13 @@
 # 			variable = disp_z
 # 	[]
 
-# 	[./h_init]
-# 		type = ScalarComponentIC
-# 		values = "{{STRAIN_XX}} {{STRAIN_YY}} {{STRAIN_ZZ}} {{STRAIN_YZ}} {{STRAIN_XZ}} {{STRAIN_XY}}"
-# 		variable = hvar
-# 	[]
+	# [./h_init]
+	# 	type = ScalarComponentIC
+	# 	values = "{{STRAIN_XX}} {{STRAIN_YY}} {{STRAIN_ZZ}} {{STRAIN_YZ}} {{STRAIN_XZ}} {{STRAIN_XY}}"
+	# 	variable = hvar
+	# []
 
-# []
+[]
 
 # no need to change this, it just enforces PBCs
 [UserObjects]
@@ -174,7 +174,17 @@
 []
 
 # defines variables for postprocessing
-!include templates/auxvars.i
+[AuxVariables]
+	!include templates/auxvars_elastic.i
+
+	{{EXTRA_AUXVARS}}
+[]
+
+[AuxKernels]
+	!include templates/auxkern_elastic.i
+
+	{{EXTRA_AUXKERN}}
+[]
 
 # Periodic boundary conditions (dirichlet, etc.)
 !include templates/pbc_3d.i
@@ -186,17 +196,20 @@
 
 	[compute_stress]
 		type = ComputeLagrangianLinearElasticStress
+		outputs = "csv exo"
+		output_properties = "small_stress"	
 	[]
-
+	
 	[compute_strain]
 		type = ComputeLagrangianStrain
 		homogenization_gradient_names = 'homogenization_gradient'
+		outputs = "csv exo"
+		output_properties = "total_strain"	
 	[]
 
 	[compute_homogenization_gradient]
 		type = ComputeHomogenizedLagrangianStrain
 	[]
-
 []
 
 # solver settings
@@ -205,21 +218,25 @@
 
 # outputs for CSV file
 [VectorPostprocessors]
-	[strain_out]
+	[strain]
 		type = ElementValueSampler
 		variable = 'strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
-		sort_by = 'id'
+		sort_by = id
 		outputs = csv
-		execute_on = TIMESTEP_END
+		execute_on = "TIMESTEP_END FINAL"
 	[]
-	[stress_out]
+	[stress]
 		type = ElementValueSampler
 		variable = 'stress_xx stress_yy stress_zz stress_xy stress_xz stress_yz'
-		sort_by = 'id'
+		sort_by = id
 		outputs = csv
-		execute_on = TIMESTEP_END
+		execute_on = "TIMESTEP_END FINAL"
 	[]
+
+	{{EXTRA_POST}}
 []
+
+
 
 [Outputs]
 	[csv]	
@@ -227,8 +244,11 @@
 		file_base = "{{OUTPUT_DIR}}/{{base_name}}"
 	[]
 
-	print_perf_log = true
+	# print_perf_log = true
 	perf_graph = true
-	exodus = true
+	[exo]
+		type = Exodus
+		# output_material_properties = true
+	[]
 	# show_var_residual_norms = true
 []
