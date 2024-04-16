@@ -46,6 +46,9 @@ def write_euler_to_txt(moose_fname, d3d_fname):
     cell_dat = f["DataContainers"]["SyntheticVolumeDataContainer"]["CellData"]
     euler_ang = cell_dat["EulerAngles"][:]
 
+    print(euler_ang.shape)
+    euler_ang = euler_ang.transpose(-1, -2, -3, 0)
+
     # get spatial dims
     N_x, N_y, N_z = euler_ang.shape[:3]
 
