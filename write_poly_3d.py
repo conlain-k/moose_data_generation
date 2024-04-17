@@ -31,6 +31,8 @@ C44 = 60
 
 BASE_NAME = "poly"
 
+RADIAN_TO_DEG = 180 / np.pi
+
 
 BC_VALS = np.zeros(6)
 BC_VALS[0] = 0.001
@@ -49,15 +51,21 @@ def write_euler_to_txt(moose_fname, d3d_fname):
     print(euler_ang.shape)
     euler_ang = euler_ang.transpose(-1, -2, -3, 0)
 
+    # euler_ang = 0 * euler_ang
+    # euler_ang[0, ...] = np.pi / 4
+    # euler_ang[2, ...] = np.pi / 4
+
     # get spatial dims
-    N_x, N_y, N_z = euler_ang.shape[:3]
+    N_x, N_y, N_z = euler_ang.shape[-3:]
 
     print(euler_ang.shape)
+
+    euler_ang *= RADIAN_TO_DEG
 
     # write in fortran ordering since Moose uses that
     euler_ang = euler_ang.reshape(3, -1, order="F").T
 
-    np.savetxt(moose_fname, euler_ang, fmt="%.10f")
+    np.savetxt(moose_fname, euler_ang, fmt="%.14f")
 
     return N_x, N_y, N_z
 

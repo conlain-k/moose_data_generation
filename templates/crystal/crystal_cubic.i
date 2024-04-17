@@ -4,5 +4,5 @@
 	fill_method = symmetric9
 	read_prop_user_object = prop_read
 	outputs = "csv exo"
-	output_properties = "Euler_angles"	
+	output_properties = "Euler_angles elasticity_tensor"	
 []
