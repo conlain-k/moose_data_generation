@@ -63,21 +63,31 @@ def write_euler_to_txt(moose_fname, d3d_fname):
     euler_ang *= RADIAN_TO_DEG
 
     # write in fortran ordering since Moose uses that
-    euler_ang = euler_ang.reshape(3, -1, order="F").T
+    euler_ang = euler_ang.reshape(3, -1, order="C").T
 
     np.savetxt(moose_fname, euler_ang, fmt="%.14f")
 
     return N_x, N_y, N_z
 
 
-def build_input_crystal(d3d_fname, C11, C12, C44, bc_vals, basename, N_override=None):
+def build_input_crystal(
+    d3d_fname,
+    C11,
+    C12,
+    C44,
+    bc_vals,
+    base_name,
+    input_dir=INPUT_DIR,
+    output_dir=OUTPUT_DIR,
+    N_override=None,
+):
 
     with open(BASE_TEMPLATE, "r") as f:
         template = "".join(f.readlines())
 
     template = write_BCs(bc_vals, template)
 
-    moose_poly_fname = f"{INPUT_DIR}/{basename}_euler_ang.txt"
+    moose_poly_fname = f"{input_dir}/{base_name}_euler_ang.txt"
 
     N_x, N_y, N_z = write_euler_to_txt(moose_poly_fname, d3d_fname)
 
@@ -85,7 +95,7 @@ def build_input_crystal(d3d_fname, C11, C12, C44, bc_vals, basename, N_override=
     if N_override is not None:
         N_x, N_y, N_z = N_override, N_override, N_override
 
-    template = write_initial_angles(f"{basename}_euler_ang.txt", template)
+    template = write_initial_angles(f"{base_name}_euler_ang.txt", template)
 
     # write mesh size
     template = write_mesh_info(N_x, N_y, N_z, template)
@@ -93,9 +103,9 @@ def build_input_crystal(d3d_fname, C11, C12, C44, bc_vals, basename, N_override=
     template = write_cubic_coeffs(C11, C12, C44, template)
 
     # now write other info
-    template = template.replace(r"{{base_name}}", f"{basename}")
-    template = template.replace(r"{{INPUT_DIR}}", f"{INPUT_DIR}")
-    template = template.replace(r"{{OUTPUT_DIR}}", f"{OUTPUT_DIR}")
+    template = template.replace(r"{{base_name}}", f"{base_name}")
+    template = template.replace(r"{{INPUT_DIR}}", f"{input_dir}")
+    template = template.replace(r"{{OUTPUT_DIR}}", f"{output_dir}")
 
     template = template.replace(r"{{CRYSTAL_MODE}}", f"true")
     template = template.replace(r"{{NPHASE}}", f"false")

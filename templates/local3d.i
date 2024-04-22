@@ -33,26 +33,26 @@
 	# set some node sets for periodic BCs
 	[origin_set]
 		type=ExtraNodesetGenerator
-		new_boundary = "origin"
-		coord = "0 0 0"
+		new_boundary = 'origin'
+		coord = '0 0 0'
 		input=generated
 	[]
 	[xp_set]
 		type=ExtraNodesetGenerator
-		new_boundary = "x_plus"
-		coord = "1 0 0"
+		new_boundary = 'x_plus'
+		coord = '1 0 0'
 		input=origin_set
 	[]
 	[yp_set]
 		type=ExtraNodesetGenerator
-		new_boundary = "y_plus"
-		coord = "0 1 0"
+		new_boundary = 'y_plus'
+		coord = '0 1 0'
 		input=xp_set
 	[]
 	[zp_set]
 		type=ExtraNodesetGenerator
-		new_boundary = "z_plus"
-		coord = "0 0 1"
+		new_boundary = 'z_plus'
+		coord = '0 0 1'
 		input=yp_set
 	[]
 []
@@ -77,25 +77,25 @@
 [ICs]
 # 	[./xinit_0]
 # 			type = ConstantIC
-# 			value = "{{DISP_X_INIT}}"
+# 			value = '{{DISP_X_INIT}}'
 # 			variable = disp_x
 # 	[]
 # 	[./yinit]
 # 			type = ConstantIC
-# 			value = "{{DISP_Y_INIT}}"
+# 			value = '{{DISP_Y_INIT}}'
 # 			variable = disp_y
 # 	[]
 # 	[./zinit]
 # 			type = ConstantIC
-# 			value = "{{DISP_Z_INIT}}"
+# 			value = '{{DISP_Z_INIT}}'
 # 			variable = disp_z
 # 	[]
 
-	# [./h_init]
-	# 	type = ScalarComponentIC
-	# 	values = "{{STRAIN_XX}} {{STRAIN_YY}} {{STRAIN_ZZ}} {{STRAIN_YZ}} {{STRAIN_XZ}} {{STRAIN_XY}}"
-	# 	variable = hvar
-	# []
+	[./h_init]
+		type = ScalarComponentIC
+		values = '{{STRAIN_XX}} {{STRAIN_YY}} {{STRAIN_ZZ}} {{STRAIN_YZ}} {{STRAIN_XZ}} {{STRAIN_XY}}'
+		variable = hvar
+	[]
 
 []
 
@@ -196,15 +196,15 @@
 
 	[compute_stress]
 		type = ComputeLagrangianLinearElasticStress
-		outputs = "csv exo"
-		output_properties = "small_stress"	
+		outputs = 'csv'
+		output_properties = 'small_stress'	
 	[]
 	
 	[compute_strain]
 		type = ComputeLagrangianStrain
 		homogenization_gradient_names = 'homogenization_gradient'
-		outputs = "csv exo"
-		output_properties = "total_strain"	
+		outputs = 'csv'
+		output_properties = 'total_strain'	
 	[]
 
 	[compute_homogenization_gradient]
@@ -214,24 +214,26 @@
 
 # solver settings
 !include templates/solver/hypre_bgcstab.i
+# !include templates/solver/newton.i
+# !include templates/solver/hypre_gmres.i
 # !include templates/solver/debug.i
 
 # outputs for CSV file
 [VectorPostprocessors]
-	[strain]
+	[results]
 		type = ElementValueSampler
-		variable = 'strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz'
+		variable = 'strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz stress_xx stress_yy stress_zz stress_xy stress_xz stress_yz'
 		sort_by = id
 		outputs = csv
-		execute_on = "TIMESTEP_END FINAL"
+		execute_on = 'TIMESTEP_END FINAL'
 	[]
-	[stress]
-		type = ElementValueSampler
-		variable = 'stress_xx stress_yy stress_zz stress_xy stress_xz stress_yz'
-		sort_by = id
-		outputs = csv
-		execute_on = "TIMESTEP_END FINAL"
-	[]
+	# [stress]
+	# 	type = ElementValueSampler
+	# 	variable = ''
+	# 	sort_by = id
+	# 	outputs = csv
+	# 	execute_on = 'TIMESTEP_END FINAL'
+	# []
 
 	{{EXTRA_POST}}
 []
@@ -239,16 +241,18 @@
 
 
 [Outputs]
+	file_base = '{{OUTPUT_DIR}}/{{base_name}}'
 	[csv]	
 		type = CSV
-		file_base = "{{OUTPUT_DIR}}/{{base_name}}"
+		hide = 'hvar'
+		execute_on = 'TIMESTEP_END'
 	[]
 
 	# print_perf_log = true
 	perf_graph = true
-	[exo]
-		type = Exodus
-		# output_material_properties = true
-	[]
+	# [exo]
+	# 	type = Exodus
+	# 	# output_material_properties = true
+	# []
 	# show_var_residual_norms = true
 []

@@ -14,22 +14,16 @@
     # no line search since our homog. system is nearly linear (jacobian should be pretty stable)
     line_search = 'bt'
     
-    # Print out reason for convergence
-    petsc_options =       '-snes_converged_reason'
-    
-    # multigrid preconditioner with BCGS iterations under the hood
-    petsc_options_iname = '-pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -ksp_type'
-    petsc_options_value = 'hypre     boomeramg      0.65 bcgs'
-    
-    
+    # multigrid preconditioner with GMRES iterations under the hood
     # petsc_options =       '-snes_converged_reason -ksp_gmres_modifiedgramschmidt'
-    # petsc_options_iname = '-pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -ksp_gmres_restart'
-    # petsc_options_value = 'hypre     boomeramg      0.4 20'
+    petsc_options =       '-snes_converged_reason'
+    petsc_options_iname = '-pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -ksp_gmres_restart'
+    petsc_options_value = 'hypre     boomeramg      0.3 10'
 
 
     # keep approx jacobian between NL iters (since it shouldn't change much)
     reuse_preconditioner = true
-    reuse_preconditioner_max_linear_its = 10
+    reuse_preconditioner_max_linear_its = 20
 
     
 

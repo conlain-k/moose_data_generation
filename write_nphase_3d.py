@@ -93,7 +93,14 @@ def gen_micro(N):
     return micro.astype(int), X
 
 
-def build_input_nphase(micro, phase_info, bc_vals, basename):
+def build_input_nphase(
+    micro,
+    phase_info,
+    bc_vals,
+    basename,
+    input_dir=INPUT_DIR,
+    output_dir=OUTPUT_DIR,
+):
 
     # convert C-to-Fortran ordering
     micro = micro.transpose(-1, -2, -3)
@@ -115,8 +122,8 @@ def build_input_nphase(micro, phase_info, bc_vals, basename):
 
     # now write other info
     template = template.replace(r"{{base_name}}", f"{basename}")
-    template = template.replace(r"{{INPUT_DIR}}", f"{INPUT_DIR}")
-    template = template.replace(r"{{OUTPUT_DIR}}", f"{OUTPUT_DIR}")
+    # template = template.replace(r"{{INPUT_DIR}}", f"{INPUT_DIR}")
+    template = template.replace(r"{{OUTPUT_DIR}}", f"{output_dir}")
 
     template = template.replace(r"{{CRYSTAL_MODE}}", f"false")
     template = template.replace(r"{{NPHASE}}", f"true")
