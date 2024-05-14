@@ -218,24 +218,60 @@
 # !include templates/solver/hypre_gmres.i
 # !include templates/solver/debug.i
 
+
 # outputs for CSV file
 [VectorPostprocessors]
-	[results]
+	[stress_strain]
 		type = ElementValueSampler
 		variable = 'strain_xx strain_yy strain_zz strain_xy strain_xz strain_yz stress_xx stress_yy stress_zz stress_xy stress_xz stress_yz'
 		sort_by = id
 		outputs = csv
-		execute_on = 'TIMESTEP_END FINAL'
+		execute_on = 'FINAL'
+		# this is sneaky -- it gets rid of the trailing numbers 
+		# my postproc code assumes we only write this VPP once (hence the FINAL)
+		contains_complete_history = true
 	[]
-	# [stress]
-	# 	type = ElementValueSampler
-	# 	variable = ''
-	# 	sort_by = id
-	# 	outputs = csv
-	# 	execute_on = 'TIMESTEP_END FINAL'
-	# []
-
+	
 	{{EXTRA_POST}}
+[]
+
+[Postprocessors]
+	# [avg_strain_xx]
+	# 	type=VectorPostprocessorReductionValue
+	# 	vector_name='strain_xx'
+	# 	vectorpostprocessor='stress_strain'
+	# 	value_type='average'
+	# []
+	# [avg_stress_xx]
+	# 	type=VectorPostprocessorReductionValue
+	# 	vector_name='stress_xx'
+	# 	vectorpostprocessor='stress_strain'
+	# 	value_type='average'
+	# []
+	# [avg_stiff_xx]
+	# 	type = ParsedPostprocessor
+	# 	expression = 'avg_stress_xx / avg_strain_xx'
+	# 	pp_names = 'avg_stress_xx avg_strain_xx'
+	# []
+	# also output final residual
+	[final_residual]
+		type = Residual
+		residual_type = FINAL
+	[]
+	[num_resid]
+		type=NumResidualEvaluations
+	[]
+	[num_lin]
+		type=NumLinearIterations
+	[]
+	[num_NL]
+		type=NumNonlinearIterations
+	[]
+	[solve_time]
+		type=PerfGraphData
+		section_name='FEProblem::solve'
+		data_type = TOTAL
+	[]
 []
 
 
@@ -245,7 +281,8 @@
 	[csv]	
 		type = CSV
 		hide = 'hvar'
-		execute_on = 'TIMESTEP_END'
+		execute_on = 'FINAL'
+		
 	[]
 
 	# print_perf_log = true

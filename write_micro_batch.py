@@ -44,11 +44,32 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--randomize_props",
+    action="store_true",
+    default=False,
+    help="Randomize material properties (ignoring the provided file)",
+)
+
+parser.add_argument(
+    "--randomize_bcs",
+    action="store_true",
+    default=False,
+    help="Randomize boundary conditions (ignoring the bc flag)",
+)
+
+parser.add_argument(
     "--bc_component",
     default=0,
     type=int,
-    choices=[-1, 0, 1, 2, 3, 4, 5],
+    choices=[0, 1, 2, 3, 4, 5],
     help="Which direction should we enforce strain for the appplied BCs (in Voigt ordering)? -1 means randomly select a point on the unit ball (in Voigt space)",
+)
+
+parser.add_argument(
+    "--num_max",
+    default=None,
+    type=int,
+    help="Max number of microstructures to write (defaults to all). If this is bigger than the dataset size, all microstructures will be written exactly once.",
 )
 
 parser.add_argument(
@@ -62,10 +83,17 @@ BASE_TEMPLATE = "templates/local3d.i"
 
 
 def load_nphase_data(prop_file):
+    if prop_file is not None:
+        f = json.loads(prop_file)
+        e_vals = f["e_vals"]
+        nu_vals = f["nu_vals"]
+    else:
+        # if no properties given, take defaults
+        e_vals = np.array([120, 120 * 100])
+        nu_vals = np.array([0.3, 0.3])
+
     # load nphase stiffness from json file
-    E_VALS = np.array([120, 120 * 100])
-    NU_VALS = np.array([0.3, 0.3])
-    return np.array([E_VALS, NU_VALS]).T
+    return np.array([e_vals, nu_vals]).T
 
 
 def load_crystal_data(prop_file):
@@ -75,6 +103,25 @@ def load_crystal_data(prop_file):
     C44 = 60
 
     return C11, C12, C44
+
+
+def draw_random_bcs():
+    bc_vec = np.random.rand(6)
+    # return normalized vector (random vector on the unit ball)
+    return bc_vec / (bc_vec**2).sum().sqrt()
+
+
+def draw_random_nphase_prop(num_phases):
+    # TODO specialize beyond 2 phases
+    assert num_phases == 2
+
+    # first draw a contrast ratio, then use that
+    contrast = np.random.choice([2, 10, 50, 100])
+    e_vals = np.array([120, 120 * contrast])
+    nu_vals = np.array([0.3, 0.3])
+
+    # load nphase stiffness from json file
+    return np.array([e_vals, nu_vals]).T
 
 
 if __name__ == "__main__":
@@ -121,11 +168,16 @@ if __name__ == "__main__":
 
         micro_f = h5py.File(args.micro_path)
         # print(micro_f.keys())
-        micros = micro_f["micros"][:100]
+        micros = micro_f["micros"]
         print(micros.shape)
         num_micros = micros.shape[0]
 
         def make_template(i):
+            if args.randomize_props:
+                # draw random contrast ratio for this instance
+                phase_info = draw_random_nphase_prop(micros.shape[1])
+            if args.randomize_bcs:
+                bc_vals = draw_random_bcs()
             return build_input_nphase(
                 micros[i][1],
                 phase_info,
@@ -134,10 +186,17 @@ if __name__ == "__main__":
                 output_dir=f"{OUTPUT_DIR}/{base_name}",
             )
 
+    if args.num_max is not None:
+        # take lesser of two
+        num_micros = min(args.num_max, num_micros)
+
+    # how often to print?
+    pf = max(2, (num_micros // 20))
+
     # print(f"Writing {num_micros} files in total!")
     for i in range(num_micros):
 
-        if (i + 1) % ((num_micros // 20)) == 1:
+        if (i + 1) % pf == 1:
             print(f"Writing file {i} of {num_micros}!")
         # Make template file
         template = make_template(i)

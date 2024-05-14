@@ -12,14 +12,14 @@
     # preconditioned jacobian-free newton krylov
     solve_type = 'pjfnk'
     # no line search since our homog. system is nearly linear (jacobian should be pretty stable)
-    # line_search = 'bt'
+    line_search = 'bt'
     
     # Print out reason for convergence
-    petsc_options =       '-snes_converged_reason'
+    petsc_options = '-snes_converged_reason'
     
-    # multigrid preconditioner with BCGS iterations under the hood
-    petsc_options_iname = '-pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -ksp_type'
-    petsc_options_value = 'hypre     boomeramg      0.65 bcgs'
+    # Put petsc options here 
+    # petsc_options_iname = '-pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -ksp_type'
+    # petsc_options_value = 'hypre     boomeramg      0.65 bcgs'
     
     
     # petsc_options =       '-snes_converged_reason -ksp_gmres_modifiedgramschmidt'

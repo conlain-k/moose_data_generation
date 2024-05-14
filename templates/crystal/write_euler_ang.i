@@ -4,6 +4,6 @@ EULER_ANG_OUT[stress_out]
     variable = 'euler_angle_1 euler_angle_2 euler_angle_3'
     sort_by = 'id'
     # write to csv and exodus
-    outputs = 'csv exodus'
+    outputs = 'csv'
     execute_on = TIMESTEP_END, FINAL
 []
